@@ -1,0 +1,177 @@
+<html>
+  <head>
+      <title> 传教士问题 </title>
+      <meta charset="UTF-8">
+  </head>
+ <body>
+
+    <div  class="leftSide">
+        <div class="cjs"> </div>
+        <div class="cjs"> </div>
+        <div class="cjs"> </div>
+        <div class="yr"> </div>
+        <div class="yr"> </div>
+        <div class="yr"> </div>
+    </div>
+
+    <div class="river">
+
+    </div>
+
+     <div class="rigthSide">
+
+     </div>
+
+ </body>
+<script>
+
+    /**
+     * 某一状态
+     * @constructor
+     */
+     function  State(data) {
+         this.data = data;
+         this.parent = null;
+         this.children = [];
+         this.lvl = 1;
+         this.convertRule =null; //从父状态到本状态应用的转化规则。
+     }
+    //比较两个状态是否等价
+     State.prototype.compare = function (state) {
+         //console.log(state.constructor);
+         if( state.constructor != this.constructor ){ console.log('constructor notok'); return false;}
+         //console.log(this.data); console.log(state.data)
+         return   this.data.toString() == state.data.toString();
+     }
+     //判断当前状态是否合法
+     State.prototype.checkState = function () {
+         var data= this.data;
+         //船的位置不对
+         if(data[2]!==1&&data[2]!==0) return false;
+         if(data[1]>data[0])          return false;
+         if(data[0]>3||data[1]>3||data[0]<0||data[1]<0)   return false;
+
+         //判断是否出现过该状态 避免陷入死循环
+         var parent = this.parent;
+         //console.log(this.parent);
+         while (parent)
+         {
+             if(this.compare(parent))  { //console.log('该状态在父节点出现过'); this.print();
+                 return false;}
+              parent = parent.parent;
+         }
+         return true;
+     }
+    //输出从初始状态到改状态的过程
+     State.prototype.printProcess = function ()
+    {
+        var parent = this.parent;
+        var parents = [];
+        parents.push(this);
+        while (parent)
+        {
+            parents.push(parent);
+            parent = parent.parent;
+        }
+        //var  p = parents.pop();
+        while( (p=parents.pop()) )
+        {
+            p.print();
+        }
+    }
+    // 输出当前状态
+    State.prototype.print = function()
+    {
+        var convert = '';
+        if(this.convertRule)
+        {
+            var  rule =  this.convertRule.data;
+            boatState = rule[2] ==-1 ? "船==》":"《==船";
+            convert = "步骤"+(this.lvl-1)+" : "+boatState+" 传教士："+ Math.abs(rule[0]) +" ，野人：" +  Math.abs(rule[1]);
+        }
+        else
+            convert = '初始状态：';
+
+        var outstr= " 传教士："+this.data[0]+" ，野人："+this.data[1]+" ，是否有船："+this.data[2];
+        console.log(convert+"\n "+outstr);
+    }
+    function deepCopy(source) {
+        var result={};
+        for (var key in source) {
+            result[key] = typeof source[key]==='object'? deepCopy(source[key]): source[key];
+        }
+        return result;
+    }
+
+    //转化规则
+    function  Rule( data )
+    {
+        this.data = data;
+    }
+    //对当前状态 应用规则 , 如果转化后状态合法返回转化后的状态
+    Rule.prototype.test = function (state ) {
+        var arr =[];
+        for(var i in state.data)
+        {
+            arr.push(state.data[i]);
+        }
+        var temp = new State(arr);
+        temp.data[0]+=this.data[0];
+        temp.data[1]+=this.data[1];
+        temp.data[2]+=this.data[2];
+        temp.parent = state;
+        temp.lvl = state.lvl+1;
+        temp.convertRule = this;
+        //判断新状态是否合法---> 初始化操作放到检测前面
+        if(temp.checkState())
+        {
+            state.children.push(temp);
+            return temp;
+        }
+        return false;
+    }
+
+    function makeRule(data) {
+       return new Rule(data);
+    }
+     // 初始状态
+     var  firstState  = new  State( [3,3,1] );
+    //  目标状态
+     var  targetState = new  State( [0,0,0] );
+    //  所有合法状态
+     var legalState  =  [];
+
+    //  转化规则
+     var convertRules = [];
+     convertRules.push( makeRule( [-1,0,-1] ) );
+     convertRules.push( makeRule( [ 0,-1,-1] ) );
+     convertRules.push( makeRule( [-1,-1,-1] ) );
+     convertRules.push( makeRule( [-2,0,-1] ) );
+     convertRules.push( makeRule( [ 0,-2,-1] ) );
+
+     convertRules.push( makeRule( [1,0,1] ) );
+     convertRules.push( makeRule( [0,1,1] ) );
+     convertRules.push( makeRule( [1,1,1] ) );
+     convertRules.push( makeRule( [2,0,1] ) );
+     convertRules.push( makeRule( [0,2,1] ) );
+
+    function test( currentState) {
+        convertRules.forEach(function (rule) {
+            var s=  rule.test(currentState);
+            if( s )
+            {
+                //s.print();
+                if(s.compare(targetState))
+                {
+                    console.log('ok');
+                    s.printProcess();
+                };
+                if(s.lvl<11)  test(s);
+            }
+        });
+    };
+
+    test(firstState);
+
+</script>
+</html>
