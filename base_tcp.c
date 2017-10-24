@@ -14,23 +14,17 @@
 #include<errno.h>
 #include<signal.h>
 #include<stdlib.h>
+#include <pthread.h>
 #include"util.h"
+
 #define BUFSIZE 1024
 #define SERVER_PORT 8080
+#define APP_NAME 123
 
 struct App {
     int  server_sockfd;
     int  port;
 } app;
-
-int start_server(){
-    
-}
-
-int stop_server(){
-   close(app.server_sockfd);
-}
-
 
 void signal_handel(int signo)
 {
@@ -42,39 +36,58 @@ void signal_handel(int signo)
     }
 }
 
-int main(int argc ,char *argv[])
-{
-    int server_sockfd;
-    int client_sockfd;
-    int len;
-    char buf[BUFSIZE];
-    
-    int port =  8080;
+int start_server(int port){
+    //int port =  8080;
     signal( SIGHUP, signal_handel);
     signal( SIGINT, signal_handel);
-    server_sockfd = create_tcp_server( port);
-    client_sockfd = accept_tcp_client(server_sockfd);
+    int server_sockfd = create_tcp_server( port);
+    if (server_sockfd <0)
+    {
+        return  -1;
+    }
     app.server_sockfd = server_sockfd;
+    return server_sockfd;
+}
+
+int stop_server(){
+   close(app.server_sockfd);
+}
+
+void accept_client(void* arg)
+{
+    int  len;
+    char buf[BUFSIZE];
+    int  client_sockfd =  *((int*)arg);
+   
+    memset(buf,0,sizeof(buf));
+    if( (len=read_socket(  client_sockfd , buf ,BUFSIZE -1 )) <0 )     
+    {
+        perror(" read socket :");
+    }
+
+    printf("recv len %d , content:\n%s\n",len,buf);
 
     char *send_content = "welcome to myserver\n";
     write_socket(client_sockfd ,send_content,strlen(send_content));
     
+    close( client_sockfd );
+}
+
+int main(int argc ,char *argv[])
+{
+    int server_sockfd;
+    int client_sockfd;
+    pthread_t newthread;
+
+    server_sockfd = start_server( 8080 );
+
     while(1)
     {
-        memset(buf,0,sizeof(buf));
-        if( (len=read_socket(  client_sockfd , buf ,BUFSIZE -1 )) <0 )     
-        {
-            perror(" read socket :");
-            break;
-        }
-
-        printf("recv len %d , content: %s \n",len,buf);
-        if( write_socket( client_sockfd , buf ,len )<0 )
-        {
-            perror(" write ");
-        }
+      client_sockfd = accept_tcp_client(server_sockfd);
+      if (pthread_create(&newthread , NULL, (void *)accept_client, (void *)&client_sockfd) != 0)
+        perror("pthread_create");
     }
-    close( client_sockfd );
+    
     close( server_sockfd );
    return 0 ;
 }

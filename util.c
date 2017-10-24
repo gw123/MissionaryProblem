@@ -119,7 +119,7 @@ int read_socket( int socket_fd ,char* buffer , int len  )
         }
       }else if(temp_len==0)
       {
-         printf(" client has close ");
+          printf("read_socket client has close ");
          return  -2;
       }
      read_total += temp_len;

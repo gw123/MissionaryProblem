@@ -13,8 +13,12 @@
 #include <netinet/in.h>  
 #include <arpa/inet.h>  
 #include <string.h>
+
 #include "util.h"
+
 #define BUFSIZE  1024
+
+
 int main(int argc, char *argv[])  
 {  
     int client_sockfd;  
