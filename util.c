@@ -105,27 +105,27 @@ int read_socket( int socket_fd ,char* buffer , int len  )
     int temp_len = 0;
     int read_total = 0 ;
 
+    
+    temp_len = recv( socket_fd,buffer , len ,0 );
+    //printf("read_socket  temp_len : %d \n" ,temp_len);
+    if ( -1 == temp_len )
     {
-      temp_len = recv( socket_fd,buffer , len ,0 );
-      //printf("read_socket  temp_len : %d \n" ,temp_len);
-      if ( -1 == temp_len )
+      if (errno==EAGAIN||errno==EWOULDBLOCK||errno==EINTR)
+        return 0;
+      else
       {
-        if (errno==EAGAIN||errno==EWOULDBLOCK||errno==EINTR)
-          return 0;
-        else
-        {
-          perror("read_socket recv :");
-          return  -1;    
-        }
-      }else if(temp_len==0)
-      {
-          printf("read_socket client has close ");
-         return  -2;
+        perror("read_socket recv :");
+        return  -1;    
       }
-     read_total += temp_len;
-     len-=temp_len;
-     buffer+= temp_len;
+    }else if(temp_len==0)
+    {
+        printf("read_socket client has close ");
+       return  -2;
     }
+   read_total += temp_len;
+   len-=temp_len;
+   buffer+= temp_len;
+    
 
     return read_total;
 }

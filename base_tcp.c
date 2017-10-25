@@ -16,7 +16,8 @@
 #include<stdlib.h>
 #include <pthread.h>
 #include"util.h"
-
+#include"buffer.h"
+#include "http_help.h"
 #define BUFSIZE 1024
 #define SERVER_PORT 8080
 #define APP_NAME 123
@@ -66,9 +67,17 @@ void accept_client(void* arg)
     }
 
     printf("recv len %d , content:\n%s\n",len,buf);
-
-    char *send_content = "welcome to myserver\n";
-    write_socket(client_sockfd ,send_content,strlen(send_content));
+    Buffer *buffer =  create_buffer(1024);
+    set_http_header_status(buffer ,HTTP_404);
+    set_http_header_content_type(buffer, HTTP_TYPE_HTML);
+    set_http_header_end(buffer);
+    char *str = "<BODY><P> 404</P></BODY>\r\n";
+    write_buffer(buffer, str, strlen(str));
+    write_socket(client_sockfd, buffer->buffer, buffer->pos);
+    free_buffer(buffer);
+    //send_404_page(client_sockfd);
+    //char *send_content = "welcome to myserver\n";
+    //write_socket(client_sockfd ,send_content,strlen(send_content));
     
     close( client_sockfd );
 }
