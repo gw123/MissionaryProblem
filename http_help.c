@@ -1,8 +1,59 @@
 #include "buffer.h"
-#include "util.h"
+#include "net.h"
 #include "http_help.h"
+#include "util.h"
 #include <string.h>
+#include <stdio.h>
 #define SERVER_STRING "Server: gw_httpd/0.1.0\r\n"
+
+int parse_http_header(Buffer * buffer)
+{
+   char *p1, *p2;
+   //printf("%s\n", "explode=====>");
+   Array *headers = explode("\r\n",buffer->buffer);
+   //printf("headers len :%d\n",headers->len );
+   //printf("%s\n",buffer->buffer );
+   //while( p1 = array_shift(headers) )
+   p1 = array_shift(headers);
+   Array *header_item = explode(" ",p1);
+   //printf("method: %s\n", p1);
+   if(header_item->len>=2)
+   {
+    char *method = array_shift(header_item);
+    char *query  = array_shift(header_item);
+    printf("method: %s\n", method);
+    printf("query: %s\n", query);
+
+   }else{
+    return -1;
+   }
+
+   free(header_item);
+   char *key ;
+   char *value ;
+   while( (p1 = array_shift(headers)) !=0)
+   {
+      //printf("header: %s\n", p1);
+       if( (*p1) ==0 )
+       {
+         free(p1); break;
+       }
+       
+       header_item  = explode(": ",p1);
+       char *key    = array_shift(header_item);
+       char *value  = array_shift(header_item);
+       printf("%s  => %s\n", key , value);
+       free(p1);
+   }
+
+   //
+   p1 = array_shift(headers);
+   free(p1);
+   //开始解析post 数据
+
+   array_free(headers);
+
+}
 
 int set_http_header_status(Buffer * buffer,int http_status)
 {

@@ -12,9 +12,9 @@
 #include<signal.h>
 #include<stdlib.h>
 #include "buffer.h"
-//#include"util.h"
+//#include"net.h"
 
-const  int  buffer_size = 1024;
+const  int  buffer_size = 512;
 // 
 const  int  buffer_max_size = 1048576 ;
 //#define  BUFFER_TEST  1 //for test
@@ -50,6 +50,12 @@ int  write_buffer(Buffer * buffer ,char *temp , int len)
     buffer->pos+=len;
 
     return 0;
+}
+
+int read_buffer(Buffer *buffer,char *buffer1 ,int len,char *end)
+{
+  //if()
+ return 0;
 }
 
 void  reset_buffer(Buffer *buffer)

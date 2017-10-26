@@ -14,7 +14,7 @@
 #include <arpa/inet.h>  
 #include <string.h>
 
-#include "util.h"
+#include "net.h"
 
 #define BUFSIZE  1024
 

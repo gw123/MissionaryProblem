@@ -15,8 +15,9 @@
 #include<signal.h>
 #include<stdlib.h>
 #include <pthread.h>
-#include"util.h"
-#include"buffer.h"
+#include "net.h"
+#include "util.h"
+#include "buffer.h"
 #include "http_help.h"
 #define BUFSIZE 1024
 #define SERVER_PORT 8080
@@ -59,18 +60,21 @@ void accept_client(void* arg)
     int  len;
     char buf[BUFSIZE];
     int  client_sockfd =  *((int*)arg);
-   
-    memset(buf,0,sizeof(buf));
-    if( (len=read_socket(  client_sockfd , buf ,BUFSIZE -1 )) <0 )     
+    Buffer *buffer = create_buffer(512);
+    if( read_http_header( client_sockfd , buffer ) !=0 )     
     {
         perror(" read socket :");
     }
+    printf("%s\n", "New client parse ==>");
+    //printf("recv len %d , content:\n%s\n",buffer->pos,buffer->buffer);
+    parse_http_header(buffer);
+    reset_buffer(buffer);
 
-    printf("recv len %d , content:\n%s\n",len,buf);
-    Buffer *buffer =  create_buffer(1024);
+    //buffer =  create_buffer(1024);
     set_http_header_status(buffer ,HTTP_404);
     set_http_header_content_type(buffer, HTTP_TYPE_HTML);
     set_http_header_end(buffer);
+
     char *str = "<BODY><P> 404</P></BODY>\r\n";
     write_buffer(buffer, str, strlen(str));
     write_socket(client_sockfd, buffer->buffer, buffer->pos);
@@ -89,7 +93,11 @@ int main(int argc ,char *argv[])
     pthread_t newthread;
 
     server_sockfd = start_server( 8080 );
-
+    if(server_sockfd<0)
+    {
+        perror(" start_server faild \n" );
+        return -1;
+    }
     while(1)
     {
       client_sockfd = accept_tcp_client(server_sockfd);
