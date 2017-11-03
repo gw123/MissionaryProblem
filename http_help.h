@@ -22,10 +22,18 @@
 #define HTTP_TYPE_PDF   8
 #define HTTP_TYPE_MSWORD  9
 
+typedef struct  HttpHeader 
+{
+  char  *head ;
+  char  *middle;
+}HttpHeader;
+
 int send_404_page(int client_sockfd);
 
-int set_http_header(Buffer * buffer,int http_status);
+int set_http_header_status(Buffer * buffer,int http_status);
 
-int set_http_content_type(Buffer *buffer,int conent_type);
+int set_http_header_content_type(Buffer *buffer,int conent_type);
 
 int set_http_header_end(Buffer *buffer);
+
+Buffer* create_request_header(char *queryStr ,char *hostIp);

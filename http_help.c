@@ -6,6 +6,8 @@
 #include <stdio.h>
 #define SERVER_STRING "Server: gw_httpd/0.1.0\r\n"
 
+
+
 int parse_http_header(Buffer * buffer)
 {
    char *p1, *p2;
@@ -75,10 +77,10 @@ int set_http_header_status(Buffer * buffer,int http_status)
         break;
     }
    
-    write_buffer(buffer,str , strlen(str));
+    write_buffer(buffer ,str , strlen(str));
 
     str = SERVER_STRING;
-    write_buffer(buffer,str , strlen(str));
+    write_buffer(buffer ,str , strlen(str));
 
     return 0;
 }
@@ -148,4 +150,31 @@ int  add_302()
 {
 
 }
+
+
+/*******************客户端头********************/
+
+
+Buffer* create_request_header(char *queryStr ,char *hostIp)
+{
+    char *temp_str;
+    char *buf  = create_buffer();
+    temp_str = "GET ";
+    write_buffer( buf ,temp_str,strlen(temp_str) );
+    write_buffer( buf ,queryStr,strlen(queryStr) );
+
+    temp_str = " HTTP/1.1\r\n";
+    write_buffer( buf ,temp_str,strlen(temp_str) );
+    temp_str = "Host: ";
+    write_buffer( buf ,temp_str,strlen(temp_str) );
+    write_buffer( buf ,hostIp,strlen(hostIp) );
+    temp_str = "\r\n";
+    write_buffer( buf ,temp_str,strlen(temp_str) );
+
+    temp_str = "\r\n";
+    write_buffer( buf ,temp_str,strlen(temp_str) );
+    return buf;
+}
+
+
 
