@@ -157,127 +157,24 @@ int  add_302()
 Buffer* create_request_header(char *queryStr ,char *host)
 {
     char *temp_str;
-    Buffer *buf  = create_buffer(256);
-   
-     //请求方式 路径 http 协议版本
+    char *buf  = create_buffer(256);
     temp_str = "GET ";
+    //char hostIp[16];
+    //getHostIp(host ,hostIp);
     write_buffer( buf ,temp_str,strlen(temp_str) );
     write_buffer( buf ,queryStr,strlen(queryStr) );
-    temp_str = " HTTP/1.1\r\n";
+
+    temp_str = "HTTP/1.1\r\n";
     write_buffer( buf ,temp_str,strlen(temp_str) );
-    
-    //设置host 
     temp_str = "Host: ";
     write_buffer( buf ,temp_str,strlen(temp_str) );
     write_buffer( buf ,host ,strlen(host) );
     temp_str = "\r\n";
     write_buffer( buf ,temp_str,strlen(temp_str) );
-
-    //是否为长连接（ http1.0 默认为 close  ， http1.1 默认为Keep-alive）
-    temp_str = "Connection: Close\r\n";
-    write_buffer( buf ,temp_str,strlen(temp_str) );
-
-    // header 结尾
+    temp_str = "connection: Keep-Alive\r\n";
     temp_str = "\r\n";
     write_buffer( buf ,temp_str,strlen(temp_str) );
-    
-   return buf;
-}
-
-/*  queryStr 一定要以 / 开头 如： /index.html **/
-Buffer* send_http_request(char* host,unsigned short port,char* queryStr)
-{  
-    Buffer *buf;
-    char hostIp[16];
-    if( getHostIp(host,hostIp) !=0 )
-    {
-       printf("can't resolve host ip: %s\n",host);
-       return NULL;     
-    }
-
-    int client_sockfd =  create_tcp_client( hostIp,port);
-    if(client_sockfd==-1)
-    {
-        printf("连接服务器失败\n");
-        free_buffer( buf );
-        return  NULL;
-    }
-
-    printf("连接到服务器 \n");
-
-    buf = create_request_header( queryStr , host);
-
-    //printf("request header: \n%s\n",buf->buffer );
-    write_socket( client_sockfd,buf->buffer,buf->pos);
-    //free_buffer(  buf );
-    reset_buffer( buf );
-    read_http_response(client_sockfd ,buf);
-    //printf("recv len:%d \n recv content:\n%s\n END=== \n" ,buf->pos,buf->buffer);
-    close(client_sockfd);   
-   return buf;
-}
-
-Buffer* send_get_request(char * url)
-{
-   Buffer *buffer;
-   char *p = url; 
-   char *host ;
-   int host_len=0;
-   char portStr[6]={0};
-   unsigned short port=80;
-   char *queryStr;
-   int queryStr_len=0;
-   char *temp ; 
-   if( strncmp(p,"http://",7 ) !=0 )
-   {
-     printf("only supose http \n");
-     return NULL;
-   }
-    
-   p += strlen("http://");
-   host = p;
-   while( (*p)!=0 && (*p)!='/' && (*p)!=':' )
-   {
-     p++;
-     host_len++;
-   }
-   
-   temp = malloc(host_len+1);
-   memcpy(temp,host,host_len);
-   temp[host_len]=0;
-   host=temp;
-   //   printf("%s\n",host); 
-
-   if( *p == ':' ) 
-   { 
-     p++;
-     int i=0;
-     while( i<6 && (*p)!='/' && (*p)!=0 )
-     {
-       portStr[i++]=*p; p++;
-     }
-     port = atoi(portStr);
-   }   
-   //   printf("port: %d\n" ,port);
- 
-   queryStr = p;
-   while( (*p)!=0  )
-   {
-     p++;
-     queryStr_len++;
-   }
-   
-   temp = malloc(queryStr_len+1);  
-   memcpy(temp,queryStr,queryStr_len);
-   temp[queryStr_len]=0;
-   queryStr =temp;
- 
-   //printf("host:%s  queryStr:%s \n port:%d \n",host,queryStr,port);
-
-   buffer =send_http_request(host,port,queryStr);
-   free(host);
-   free(queryStr);
-   return buffer;
+    return buf;
 }
 
 

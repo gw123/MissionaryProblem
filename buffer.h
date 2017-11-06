@@ -1,5 +1,6 @@
 
-
+#ifndef Buffer_Struct
+#define Buffer_Struct
 typedef  struct  
 {
   char *buffer;
@@ -9,6 +10,7 @@ typedef  struct
   int  read_pos;
   
 } Buffer;
+#endif
 
 Buffer* create_buffer(int  buffer_size );
 

@@ -37,3 +37,9 @@ int set_http_header_content_type(Buffer *buffer,int conent_type);
 int set_http_header_end(Buffer *buffer);
 
 Buffer* create_request_header(char *queryStr ,char *hostIp);
+
+Buffer* send_http_request(char* host,unsigned short port,char* queryStr);
+
+Buffer* send_get_request(char *url);
+
+

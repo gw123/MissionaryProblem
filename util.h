@@ -1,4 +1,5 @@
-
+#ifndef Struct_array
+#define Struct_array
 typedef struct {
     char *str;
     int len;
@@ -11,6 +12,7 @@ typedef struct {
     int  len;    //数据内容长度
     int  size;   //数组索引分配内存大小
 } Array;
+#endif
 
 Array*  create_array();
 
